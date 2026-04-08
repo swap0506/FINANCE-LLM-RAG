@@ -87,10 +87,10 @@ pip install -r requirements.txt
    ```
 
 3. **Download the model**:
-   Ensure the model file is located at `F:/Wearables/Medical-RAG-LLM/models/mistral-7b-instruct-v0.1.Q4_K_M.gguf`.
+   Ensure the model file is located at `C:\Users\swapn\Downloads\Insurance-RAG-LLM-main\Insurance-RAG-LLM-main\models\mistral-7b-instruct-v0.1.Q4_K_M.gguf`.
 
 4. **Prepare the data**:
-   Place your insurance and banking PDFs in the `F:/Wearables/Medical-RAG-LLM/Data` folder.
+   Place your insurance and banking PDFs in the `C:\Users\swapn\Downloads\Insurance-RAG-LLM-main\Insurance-RAG-LLM-main\Data` folder.
 
 5. **Ingest the documents**:
 
