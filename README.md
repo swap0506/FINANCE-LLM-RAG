@@ -76,8 +76,8 @@ pip install -r requirements.txt
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/THE-DEEPDAS/Medical-pathway-LLM.git
-   cd Medical-pathway-LLM
+   git clone https://github.com/swap0506/FINANCE-LLM-RAG.git
+   cd FINANCE-LLM-RAG
    ```
 
 2. **Install dependencies**:
