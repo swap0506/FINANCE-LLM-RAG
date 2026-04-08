@@ -13,7 +13,7 @@ MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
     "local-mistral": {
         "provider": ModelProvider.LOCAL,
         "model_type": "mistral",
-        "MODEL_PATH": r"C:\Users\swapn\Downloads\Insurance-RAG-LLM-main\Insurance-RAG-LLM-main\models\mistral-7b-instruct-v0.1.Q4_K_M.gguf",
+        "MODEL_PATH": os.getenv("LOCAL_MODEL_PATH"),
         "config": {
             "max_new_tokens": 512,
             "context_length": 2048,
@@ -25,7 +25,7 @@ MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
     "groq-mixtral": {
         "provider": ModelProvider.GROQ,
         "model_id": "mixtral-8x7b-32768",
-        "api_key": "key",
+        "api_key": os.getenv("GROQ_API_KEY"),
         "config": {
             "temperature": 0.7,
             "max_tokens": 1024,
@@ -34,7 +34,7 @@ MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
     "anthropic-claude": {
         "provider": ModelProvider.ANTHROPIC,
         "model_id": "claude-3-opus-20240229",
-        "api_key": "key",
+        "api_key":  os.getenv("ANTHROPIC_API_KEY"),
         "config": {
             "temperature": 0.7,
             "max_tokens": 1024,
@@ -51,7 +51,7 @@ MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
     "openai-gpt4": {
         "provider": ModelProvider.OPENAI,
         "model_id": "gpt-4-turbo-preview",
-        "api_key": "key",
+        "api_key": os.getenv("OPENAI_API_KEY"),
         "config": {
             "temperature": 0.7,
             "max_tokens": 1024,
@@ -60,7 +60,7 @@ MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
     "together-yi": {
         "provider": ModelProvider.TOGETHER,
         "model_id": "yi:34b",
-        "api_key": "key",
+        "api_key": os.getenv("TOGETHER_API_KEY"),
         "config": {
             "temperature": 0.7,
             "max_tokens": 1024,

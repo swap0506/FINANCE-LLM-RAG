@@ -31,7 +31,7 @@ def check_data_directory():
 
 def main():
     # Step 1: Check Qdrant
-    if not check_qdrant():
+    if not check_data_directory():
         print("Error: Qdrant is not running!")
         print("Please start Qdrant with: docker run -p 6333:6333 qdrant/qdrant")
         return

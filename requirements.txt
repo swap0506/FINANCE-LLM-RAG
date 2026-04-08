@@ -38,3 +38,5 @@ langchain-community==0.0.10
 langchain-core==0.1.23
 SpeechRecognition
 itsdangerous-2.2.0
+python-dotenv
+fastapi uvicorn

@@ -30,7 +30,8 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import Filter
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
-
+from dotenv import load_dotenv
+load_dotenv()
 # ── Embeddings ────────────────────────────────────────────────────────────────
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2",
@@ -39,7 +40,12 @@ embeddings = HuggingFaceEmbeddings(
 )
 
 # ── Qdrant client ─────────────────────────────────────────────────────────────
-qdrant_client = QdrantClient(url="http://localhost:6333")
+
+
+client = QdrantClient(
+    url=os.getenv("QDRANT_URL"),
+    api_key=os.getenv("QDRANT_API_KEY"),
+)
 
 # ── Direct Qdrant search (bypasses broken LangChain wrapper) ──────────────────
 def get_relevant_docs(query: str, k: int = 5) -> List[Document]:

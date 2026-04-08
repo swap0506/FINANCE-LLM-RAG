@@ -128,3 +128,5 @@ For any questions or support, please contact:
 
 - **Deep Das**: deepdblm@gmail.com
   **Swapna**:swapnakondapuram05@gmail.com
+api -eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIiwic3ViamVjdCI6ImFwaS1rZXk6NDYwZDNiZWYtZjJjOC00OGFkLWIyZWMtNjIyZjgyNTc5ODE1In0.B0eoPskdYAV6YrcZIK-qE4XCHukbJrMc2GGp6CfWiOM
+clister -end point -https://108f7c96-d32a-4b90-a6f1-5102d091d3d9.us-west-1-0.aws.cloud.qdrant.io

@@ -1,75 +1,91 @@
 import os
+from dotenv import load_dotenv
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Qdrant
 from qdrant_client import QdrantClient
+from qdrant_client.http.models import VectorParams
 
-DATA_DIR = r"C:\Users\swapn\Downloads\Insurance-RAG-LLM-main\Insurance-RAG-LLM-main\Data"
+# Load env variables
+load_dotenv()
+
+# Use relative path (IMPORTANT for deployment)
+DATA_DIR = os.path.join(os.getcwd(), "Data")
 
 def ingest_docs():
-    """Load and process insurance and banking documents"""
+    """Load and process financial documents into Qdrant Cloud"""
     try:
-        # Load PDFs from absolute data directory
+        print(f"Loading documents from: {DATA_DIR}")
+
+        # Load PDFs
         loader = DirectoryLoader(
             DATA_DIR,
             glob="**/*.pdf",
             loader_cls=PyPDFLoader
         )
         documents = loader.load()
-        print(f"Loading documents from: {DATA_DIR}")
-        
-        # Split documents into chunks
+
+        if not documents:
+            print("No documents found!")
+            return False
+
+        # Split text
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,  # Increased for better context
+            chunk_size=1000,
             chunk_overlap=100
         )
         texts = text_splitter.split_documents(documents)
-        
-        # Initialize embeddings
+
+        # Embeddings
         embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={'device': 'cpu'}
         )
-        
-        # Initialize Qdrant client with increased timeout
-        from qdrant_client.http.models import VectorParams
-        client = QdrantClient("http://localhost:6333", timeout=60)
-        
-        # Check if collection exists and recreate only if needed
-        try:
-            client.delete_collection(collection_name="financial_docs")
-            print("Deleted existing collection")
-        except:
-            print("No existing collection to delete")
-            
-        # Create fresh collection
-        client.create_collection(
-            collection_name="financial_docs",
-            vectors_config=VectorParams(size=384, distance="Cosine")
+
+        # ✅ CLOUD QDRANT
+        client = QdrantClient(
+            url=os.getenv("QDRANT_URL"),
+            api_key=os.getenv("QDRANT_API_KEY"),
+            timeout=60
         )
-        print("Created fresh collection 'financial_docs'")
-        
-        # Initialize Qdrant vector store
+
+        collection_name = "financial_docs"
+
+        # Check if collection exists
+        collections = client.get_collections().collections
+        existing = [c.name for c in collections]
+
+        if collection_name not in existing:
+            client.create_collection(
+                collection_name=collection_name,
+                vectors_config=VectorParams(size=384, distance="Cosine")
+            )
+            print("Created collection")
+        else:
+            print("Collection already exists (no deletion ✔)")
+
+        # Vector DB
         db = Qdrant(
             client=client,
             embeddings=embeddings,
-            collection_name="financial_docs"
+            collection_name=collection_name
         )
-        
-        # Process documents in batches using add_documents instead of recreating the collection
+
+        # Batch insert
         batch_size = 10
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
             db.add_documents(batch)
-            print(f"Processed batch {i // batch_size + 1} of {len(texts) // batch_size + 1}")
-        
-        print(f"Successfully processed {len(documents)} financial documents")
+            print(f"Batch {i//batch_size + 1} done")
+
+        print(f"✅ Successfully ingested {len(documents)} documents")
         return True
-        
+
     except Exception as e:
-        print(f"Error in document ingestion: {e}")
+        print(f"❌ Error: {e}")
         return False
+
 
 if __name__ == "__main__":
     ingest_docs()
