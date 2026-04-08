@@ -3,9 +3,6 @@
 # please use a dedicated virtual environment and uninstall the conflicting packages.
 fastapi
 uvicorn
-langchain
-langchain-community
 qdrant-client
 python-dotenv
 requests
-sentence-transformers

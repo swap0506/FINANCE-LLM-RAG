@@ -140,6 +140,11 @@ venv.bak/
 
 __pycache__/
 *.pyc
+.env
+venv/
+Data/
+models/
+__pycache__/
 # Spyder project settings
 .spyderproject
 .spyproject
