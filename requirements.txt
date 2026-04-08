@@ -6,3 +6,4 @@ uvicorn
 qdrant-client
 python-dotenv
 requests
+jinja2
