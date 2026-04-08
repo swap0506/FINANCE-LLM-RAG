@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financial Query System</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <style>
+    :root {
+      --indigo: #4f46e5;
+      --purple: #7c3aed;
+      --indigo-light: #e0e7ff;
+    }
+
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, .serif { font-family: 'DM Serif Display', serif; }
+
+    @keyframes float { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-10px)} }
+    @keyframes pulse-glow { 0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.4)} 50%{box-shadow:0 0 20px 10px rgba(99,102,241,0.2)} }
+    @keyframes slide-up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes typing { from{width:0} to{width:100%} }
+    @keyframes blink { 50%{border-color:transparent} }
+    @keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%{content:'...'} 80%,100%{content:''} }
+    @keyframes fade-in-up { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    @keyframes card-reveal { from{opacity:0;transform:translateY(40px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    .animate-slide-up { animation: slide-up 0.5s ease-out forwards; }
+
+    .typing-effect {
+      overflow: hidden; white-space: nowrap; border-right: 2px solid;
+      width: 0; animation: typing 2s steps(40, end) forwards, blink 1s step-end infinite;
+    }
+    .loading-dots::after { content: '...'; animation: dots 1.5s steps(4, end) infinite; }
+
+    .team-image {
+      width: 150px; height: 150px; background-size: cover;
+      background-position: center; border-radius: 50%;
+    }
+    .recording { animation: pulse 1.5s ease-in-out infinite; background: linear-gradient(to right, #ef4444, #dc2626) !important; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+    .recording-indicator { display:none; color:#ef4444; align-items:center; margin-left:8px; animation:blink 1s infinite; }
+    .recording .recording-indicator { display:inline-flex; }
+
+    /* ── Navigation ── */
+    .nav-link {
+      position: relative; padding-bottom: 4px;
+    }
+    .nav-link::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--indigo);
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+    /* ── Section transitions ── */
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+
+    /* ── Services cards ── */
+    .service-card {
+      background: white; border-radius: 1.25rem;
+      border: 1px solid #e0e7ff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      overflow: hidden; position: relative;
+    }
+    .service-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #4f46e5, #7c3aed);
+      transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease;
+    }
+    .service-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(79,70,229,0.15); border-color: #c7d2fe; }
+    .service-card:hover::before { transform: scaleX(1); }
+
+    .service-icon-wrap {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+    }
+
+    /* ── Product cards ── */
+    .product-card {
+      background: white; border-radius: 1.5rem;
+      border: 1.5px solid #e0e7ff;
+      overflow: hidden; position: relative;
+      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s ease;
+    }
+    .product-card:hover { transform: translateY(-8px) scale(1.01); box-shadow: 0 24px 50px rgba(79,70,229,0.18); }
+
+    .product-badge {
+      position: absolute; top: 18px; right: 18px;
+      font-size: 11px; font-weight: 600; padding: 3px 10px;
+      border-radius: 999px; letter-spacing: 0.04em;
+    }
+
+    .product-header {
+      padding: 2rem 1.75rem 1.25rem;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white; position: relative; overflow: hidden;
+    }
+    .product-header::after {
+      content: ''; position: absolute; bottom: -30px; right: -20px;
+      width: 100px; height: 100px; border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+    }
+    .product-header-alt {
+      background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    }
+    .product-header-green {
+      background: linear-gradient(135deg, #059669 0%, #0ea5e9 100%);
+    }
+    .product-header-amber {
+      background: linear-gradient(135deg, #d97706 0%, #dc2626 100%);
+    }
+    .product-header-rose {
+      background: linear-gradient(135deg, #be185d 0%, #7c3aed 100%);
+    }
+    .product-header-teal {
+      background: linear-gradient(135deg, #0d9488 0%, #4f46e5 100%);
+    }
+
+    .feature-check {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #e0e7ff; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+
+    .plan-toggle { cursor: pointer; }
+    .plan-toggle input[type="checkbox"] { display: none; }
+    .toggle-track {
+      width: 48px; height: 26px; background: #c7d2fe; border-radius: 999px;
+      position: relative; transition: background 0.3s;
+    }
+    .toggle-track.on { background: #4f46e5; }
+    .toggle-thumb {
+      width: 20px; height: 20px; background: white; border-radius: 50%;
+      position: absolute; top: 3px; left: 3px; transition: transform 0.3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+    }
+    .toggle-track.on .toggle-thumb { transform: translateX(22px); }
+
+    /* ── Stat strip ── */
+    .stat-strip {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      border-radius: 1.5rem; padding: 2.5rem;
+    }
+
+    /* ── Hero accent ── */
+    .section-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: #4f46e5;
+      background: #e0e7ff; padding: 5px 14px; border-radius: 999px;
+    }
+
+    /* Card reveal animation */
+    .reveal { opacity: 0; animation: card-reveal 0.55s ease-out forwards; }
+    .reveal-1 { animation-delay: 0.05s; }
+    .reveal-2 { animation-delay: 0.15s; }
+    .reveal-3 { animation-delay: 0.25s; }
+    .reveal-4 { animation-delay: 0.35s; }
+    .reveal-5 { animation-delay: 0.45s; }
+    .reveal-6 { animation-delay: 0.55s; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex">
+          <div class="flex-shrink-0 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span class="ml-2 text-xl font-bold text-gray-900">FinQuery</span>
+          </div>
+          <div class="hidden sm:ml-8 sm:flex sm:space-x-6 items-center">
+            <a href="#" onclick="showSection('home', this)" class="nav-link active text-gray-900 text-sm font-medium py-5 transition-colors">Home</a>
+            <a href="#" onclick="showSection('services', this)" class="nav-link text-gray-500 hover:text-gray-900 text-sm font-medium py-5 transition-colors">Services</a>
+            <a href="#" onclick="showSection('products', this)" class="nav-link text-gray-500 hover:text-gray-900 text-sm font-medium py-5 transition-colors">Products</a>
+            <a href="#" onclick="showSection('about', this)" class="nav-link text-gray-500 hover:text-gray-900 text-sm font-medium py-5 transition-colors">About Us</a>
+          </div>
+        </div>
+        <div class="hidden sm:flex sm:items-center">
+          <button class="bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm">
+            Get Started
+          </button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ═══════════════ HOME SECTION ═══════════════ -->
+  <div id="section-home" class="page-section active">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+      <div class="text-center mb-12 animate-float">
+        <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">
+          Financial Information Query System
+        </h1>
+        <p class="text-gray-600 max-w-2xl mx-auto typing-effect">
+          Get answers to your insurance and banking queries using our advanced AI-powered system!!
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-xl p-6 mb-8 animate-slide-up" style="opacity:0; animation-delay:0.2s;">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div class="group transform transition-all duration-300 hover:scale-105">
+            <div class="flex items-start space-x-3 p-4 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all cursor-pointer">
+              <div class="flex-shrink-0 p-2 bg-white rounded-lg shadow-sm group-hover:animate-pulse-glow">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transform group-hover:rotate-12 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <p class="text-sm text-gray-700">Compare health insurance policies between HealthGuard and SecureCare</p>
+            </div>
+          </div>
+          <div class="group transform transition-all duration-300 hover:scale-105">
+            <div class="flex items-start space-x-3 p-4 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all cursor-pointer">
+              <div class="flex-shrink-0 p-2 bg-white rounded-lg shadow-sm group-hover:animate-pulse-glow">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transform group-hover:rotate-12 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.53 0 1.039.211 1.414.586l7 7c.775.775.775 2.053 0 2.828l-7 7c-.775.775-2.053.775-2.828 0l-7-7c-.775-.775-.775-2.053 0-2.828l7-7c.375-.375.884-.586 1.414-.586z"/></svg>
+              </div>
+              <p class="text-sm text-gray-700">What are the life insurance options available?</p>
+            </div>
+          </div>
+          <div class="group transform transition-all duration-300 hover:scale-105">
+            <div class="flex items-start space-x-3 p-4 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all cursor-pointer">
+              <div class="flex-shrink-0 p-2 bg-white rounded-lg shadow-sm group-hover:animate-pulse-glow">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transform group-hover:rotate-12 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <p class="text-sm text-gray-700">Tell me about disability insurance waiting periods</p>
+            </div>
+          </div>
+          <div class="group transform transition-all duration-300 hover:scale-105">
+            <div class="flex items-start space-x-3 p-4 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all cursor-pointer">
+              <div class="flex-shrink-0 p-2 bg-white rounded-lg shadow-sm group-hover:animate-pulse-glow">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transform group-hover:rotate-12 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <p class="text-sm text-gray-700">Which policy has the highest coverage limit?</p>
+            </div>
+          </div>
+        </div>
+
+        <form id="queryForm" class="space-y-4">
+          <div class="relative transform transition-all duration-300 hover:scale-[1.02]">
+            <textarea id="queryInput" class="w-full h-32 px-4 py-3 text-gray-700 bg-gray-50 rounded-xl border border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all" placeholder="Enter your insurance or banking query here..."></textarea>
+            <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 rounded-xl pointer-events-none"></div>
+          </div>
+          <div class="flex space-x-4">
+            <button type="submit" class="group px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg">Submit Query</button>
+            <button type="button" id="voiceButton" class="group px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium rounded-xl shadow-lg flex items-center space-x-2">
+              <span class="microphone-icon">🎤</span>
+              <span class="button-text">Start Voice Input</span>
+              <span class="recording-status"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="flex space-x-4 mb-4">
+        <select id="modelSelect" class="rounded-lg border-gray-200 px-4 py-2">
+          <option value="local-mistral">Local Mistral</option>
+          <option value="groq-mixtral">Groq Mixtral</option>
+          <option value="anthropic-claude">Claude 3</option>
+          <option value="ollama-llama2">Llama 2</option>
+          <option value="openai-gpt4">GPT-4</option>
+          <option value="together-yi">Yi 34B</option>
+        </select>
+        <button id="generateReport" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Generate Report</button>
+      </div>
+
+      <div id="responseContainer" class="hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 animate-slide-up">
+          <div class="flex items-start space-x-4">
+            <div class="flex-shrink-0 p-2 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg animate-pulse-glow">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.53 0 1.039.211 1.414.586l7 7c.775.775.775 2.053 0 2.828l-7 7c-.775.775-2.053.775-2.828 0l-7-7c-.775-.775-.775-2.053 0-2.828l7-7c.375-.375.884-.586 1.414-.586z"/></svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-gray-900 mb-2">Response</h3>
+              <div id="responseText" class="text-gray-700"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SERVICES SECTION ═══════════════ -->
+  <div id="section-services" class="page-section">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+      <!-- Hero -->
+      <div class="text-center mb-16">
+        <span class="section-eyebrow mb-4">What We Offer</span>
+        <h2 class="serif text-5xl text-gray-900 mt-4 mb-5">Intelligent Financial Services</h2>
+        <p class="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
+          FinQuery combines AI precision with financial expertise to deliver services that simplify complex insurance and banking decisions.
+        </p>
+      </div>
+
+      <!-- Stat strip -->
+      <div class="stat-strip mb-16 grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-white">
+        <div>
+          <div class="text-4xl font-bold mb-1">50K+</div>
+          <div class="text-indigo-200 text-sm font-medium">Queries Resolved</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold mb-1">98%</div>
+          <div class="text-indigo-200 text-sm font-medium">Accuracy Rate</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold mb-1">200+</div>
+          <div class="text-indigo-200 text-sm font-medium">Policies Indexed</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold mb-1">&lt;2s</div>
+          <div class="text-indigo-200 text-sm font-medium">Average Response</div>
+        </div>
+      </div>
+
+      <!-- Services grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <!-- Service 1 -->
+        <div class="service-card p-7 reveal reveal-1">
+          <div class="service-icon-wrap mb-5">
+            <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">AI-Powered Query Engine</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-5">Ask anything about insurance or banking in plain language. Our multi-model AI (Claude, GPT-4, Mistral, Llama 2) parses complex policy documents and returns precise, cited answers in under 2 seconds.</p>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0"></span>Natural language processing</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0"></span>Multi-LLM model selection</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0"></span>Voice input support</li>
+          </ul>
+        </div>
+
+        <!-- Service 2 -->
+        <div class="service-card p-7 reveal reveal-2">
+          <div class="service-icon-wrap mb-5">
+            <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Policy Comparison</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-5">Side-by-side comparison of health, life, disability, and property insurance policies. Instantly surface coverage limits, exclusions, premiums, and claim settlement ratios across providers.</p>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></span>Side-by-side policy tables</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></span>Exclusion clause highlighting</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></span>Premium vs. coverage analysis</li>
+          </ul>
+        </div>
+
+        <!-- Service 3 -->
+        <div class="service-card p-7 reveal reveal-3">
+          <div class="service-icon-wrap mb-5">
+            <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Automated Report Generation</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-5">Generate downloadable PDF reports summarising your insurance portfolio, coverage gaps, renewal timelines, and personalised recommendations — ready to share with your advisor.</p>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>Downloadable PDF output</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>Coverage gap analysis</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>Renewal reminders</li>
+          </ul>
+        </div>
+
+        <!-- Service 4 -->
+        <div class="service-card p-7 reveal reveal-4">
+          <div class="service-icon-wrap mb-5">
+            <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Banking Advisory</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-5">Understand loan eligibility, interest rate comparisons, FD/RD returns, and credit card benefits. Our AI answers complex banking queries with up-to-date product information.</p>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>Loan eligibility checks</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>Interest rate comparison</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>FD/RD return calculator</li>
+          </ul>
+        </div>
+
+        <!-- Service 5 -->
+        <div class="service-card p-7 reveal reveal-5">
+          <div class="service-icon-wrap mb-5">
+            <svg class="w-7 h-7 text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Claims Guidance</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-5">Step-by-step claim filing guidance for health, motor, and life insurance. Understand required documents, processing timelines, and track claim status through conversational queries.</p>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></span>Document checklists</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></span>Filing timeline guidance</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></span>Common rejection reasons</li>
+          </ul>
+        </div>
+
+        <!-- Service 6 -->
+        <div class="service-card p-7 reveal reveal-6">
+          <div class="service-icon-wrap mb-5">
+            <svg class="w-7 h-7 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Multilingual Support</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-5">Query in your preferred language. FinQuery supports English, Hindi, and other regional languages, making financial information accessible to every Indian household.</p>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0"></span>Hindi & regional language input</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0"></span>Translated policy summaries</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0"></span>Voice input in any language</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Process flow -->
+      <div class="mt-20">
+        <div class="text-center mb-10">
+          <span class="section-eyebrow">How It Works</span>
+          <h3 class="serif text-3xl text-gray-900 mt-4">From Query to Clarity in 3 Steps</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+          <div class="hidden md:block absolute top-10 left-1/3 right-1/3 h-0.5 bg-gradient-to-r from-indigo-200 to-purple-200"></div>
+          <div class="text-center p-6 bg-white rounded-2xl shadow-sm border border-indigo-50">
+            <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl shadow-lg">1</div>
+            <h4 class="font-semibold text-gray-900 mb-2">Ask Your Question</h4>
+            <p class="text-gray-500 text-sm">Type or speak your insurance or banking question in plain language.</p>
+          </div>
+          <div class="text-center p-6 bg-white rounded-2xl shadow-sm border border-indigo-50">
+            <div class="w-14 h-14 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl shadow-lg">2</div>
+            <h4 class="font-semibold text-gray-900 mb-2">AI Processes It</h4>
+            <p class="text-gray-500 text-sm">Your chosen AI model retrieves and analyses relevant policy data instantly.</p>
+          </div>
+          <div class="text-center p-6 bg-white rounded-2xl shadow-sm border border-indigo-50">
+            <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl shadow-lg">3</div>
+            <h4 class="font-semibold text-gray-900 mb-2">Get Clear Answers</h4>
+            <p class="text-gray-500 text-sm">Receive a precise, human-readable answer or download a full PDF report.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PRODUCTS SECTION ═══════════════ -->
+  <div id="section-products" class="page-section">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+      <!-- Header -->
+      <div class="text-center mb-14">
+        <span class="section-eyebrow mb-4">Our Products</span>
+        <h2 class="serif text-5xl text-gray-900 mt-4 mb-4">Coverage for Every Stage of Life</h2>
+        <p class="text-gray-500 text-lg max-w-xl mx-auto leading-relaxed">
+          Browse the insurance and banking products FinQuery supports. Click any product to query it instantly.
+        </p>
+      </div>
+
+      <!-- Category tabs -->
+      <div class="flex flex-wrap justify-center gap-3 mb-12" id="productTabs">
+        <button onclick="filterProducts('all', this)" class="prod-tab px-5 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-sm transition-all">All Products</button>
+        <button onclick="filterProducts('insurance', this)" class="prod-tab px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600 transition-all">Insurance</button>
+        <button onclick="filterProducts('banking', this)" class="prod-tab px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600 transition-all">Banking</button>
+        <button onclick="filterProducts('investment', this)" class="prod-tab px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600 transition-all">Investment</button>
+      </div>
+
+      <!-- Products grid -->
+      <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <!-- Health Insurance -->
+        <div class="product-card reveal reveal-1" data-category="insurance">
+          <div class="product-header">
+            <div class="text-xs font-semibold text-indigo-200 uppercase tracking-wider mb-2">Insurance</div>
+            <h3 class="text-xl font-bold text-white mb-1">Health Insurance</h3>
+            <p class="text-indigo-200 text-sm">Comprehensive medical coverage</p>
+            <div class="mt-4 flex items-baseline gap-1">
+              <span class="text-3xl font-bold text-white">₹350</span>
+              <span class="text-indigo-200 text-sm">/month onwards</span>
+            </div>
+          </div>
+          <div class="p-6">
+            <ul class="space-y-3 mb-6">
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Hospitalisation up to ₹10 lakh</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Day-care procedures covered</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Pre & post hospitalisation</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Cashless at 10,000+ hospitals</li>
+            </ul>
+            <button onclick="queryProduct('health insurance coverage and benefits')" class="w-full py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium text-sm transition-colors">Query This Product →</button>
+          </div>
+        </div>
+
+        <!-- Life Insurance -->
+        <div class="product-card reveal reveal-2" data-category="insurance">
+          <div class="product-header product-header-alt">
+            <div class="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-2">Insurance</div>
+            <h3 class="text-xl font-bold text-white mb-1">Term Life Insurance</h3>
+            <p class="text-blue-200 text-sm">Financial security for your family</p>
+            <div class="mt-4 flex items-baseline gap-1">
+              <span class="text-3xl font-bold text-white">₹500</span>
+              <span class="text-blue-200 text-sm">/month onwards</span>
+            </div>
+          </div>
+          <div class="p-6">
+            <ul class="space-y-3 mb-6">
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Cover up to ₹2 crore</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Critical illness rider available</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Accidental death benefit</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Tax benefit under 80C</li>
+            </ul>
+            <button onclick="queryProduct('term life insurance options and coverage')" class="w-full py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-sm transition-colors">Query This Product →</button>
+          </div>
+        </div>
+
+        <!-- Disability Insurance -->
+        <div class="product-card reveal reveal-3" data-category="insurance">
+          <div class="product-header product-header-green">
+            <div class="text-xs font-semibold text-emerald-200 uppercase tracking-wider mb-2">Insurance</div>
+            <h3 class="text-xl font-bold text-white mb-1">Disability Insurance</h3>
+            <p class="text-emerald-200 text-sm">Income protection when you can't work</p>
+            <div class="mt-4 flex items-baseline gap-1">
+              <span class="text-3xl font-bold text-white">₹420</span>
+              <span class="text-emerald-200 text-sm">/month onwards</span>
+            </div>
+          </div>
+          <div class="p-6">
+            <ul class="space-y-3 mb-6">
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Up to 70% of monthly income</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Short & long-term options</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>30–180 day waiting period</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Own-occupation definition</li>
+            </ul>
+            <button onclick="queryProduct('disability insurance waiting periods and benefits')" class="w-full py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium text-sm transition-colors">Query This Product →</button>
+          </div>
+        </div>
+
+        <!-- Motor Insurance -->
+        <div class="product-card reveal reveal-4" data-category="insurance">
+          <div class="product-header product-header-amber">
+            <div class="text-xs font-semibold text-amber-200 uppercase tracking-wider mb-2">Insurance</div>
+            <h3 class="text-xl font-bold text-white mb-1">Motor Insurance</h3>
+            <p class="text-amber-200 text-sm">Comprehensive vehicle protection</p>
+            <div class="mt-4 flex items-baseline gap-1">
+              <span class="text-3xl font-bold text-white">₹2,500</span>
+              <span class="text-amber-200 text-sm">/year onwards</span>
+            </div>
+          </div>
+          <div class="p-6">
+            <ul class="space-y-3 mb-6">
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Own damage + third-party</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Zero depreciation add-on</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Roadside assistance</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Cashless claim at 4,000+ garages</li>
+            </ul>
+            <button onclick="queryProduct('motor insurance comprehensive coverage options')" class="w-full py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium text-sm transition-colors">Query This Product →</button>
+          </div>
+        </div>
+
+        <!-- Home Loan -->
+        <div class="product-card reveal reveal-5" data-category="banking">
+          <div class="product-header product-header-rose">
+            <div class="text-xs font-semibold text-pink-200 uppercase tracking-wider mb-2">Banking</div>
+            <h3 class="text-xl font-bold text-white mb-1">Home Loan</h3>
+            <p class="text-pink-200 text-sm">Make your dream home a reality</p>
+            <div class="mt-4 flex items-baseline gap-1">
+              <span class="text-3xl font-bold text-white">8.5%</span>
+              <span class="text-pink-200 text-sm">p.a. onwards</span>
+            </div>
+          </div>
+          <div class="p-6">
+            <ul class="space-y-3 mb-6">
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Loans up to ₹5 crore</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Tenure up to 30 years</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Tax benefit under 80C & 24B</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Balance transfer facility</li>
+            </ul>
+            <button onclick="queryProduct('home loan eligibility and interest rates')" class="w-full py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium text-sm transition-colors">Query This Product →</button>
+          </div>
+        </div>
+
+        <!-- Fixed Deposit -->
+        <div class="product-card reveal reveal-6" data-category="investment">
+          <div class="product-header product-header-teal">
+            <div class="text-xs font-semibold text-teal-200 uppercase tracking-wider mb-2">Investment</div>
+            <h3 class="text-xl font-bold text-white mb-1">Fixed Deposit</h3>
+            <p class="text-teal-200 text-sm">Guaranteed returns, zero risk</p>
+            <div class="mt-4 flex items-baseline gap-1">
+              <span class="text-3xl font-bold text-white">7.25%</span>
+              <span class="text-teal-200 text-sm">p.a. up to</span>
+            </div>
+          </div>
+          <div class="p-6">
+            <ul class="space-y-3 mb-6">
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Tenures from 7 days to 10 years</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Senior citizen extra 0.5%</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Loan against FD available</li>
+              <li class="flex items-start gap-3 text-sm text-gray-600"><div class="feature-check"><svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>DICGC insured up to ₹5 lakh</li>
+            </ul>
+            <button onclick="queryProduct('fixed deposit interest rates and tenure options')" class="w-full py-2.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 font-medium text-sm transition-colors">Query This Product →</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CTA strip -->
+      <div class="mt-16 text-center bg-white rounded-2xl border border-indigo-100 p-10 shadow-sm">
+        <h3 class="serif text-3xl text-gray-900 mb-3">Can't find what you're looking for?</h3>
+        <p class="text-gray-500 mb-6">Just ask! Our AI can answer questions about thousands of policies and banking products not listed here.</p>
+        <button onclick="showSection('home', document.querySelector('[onclick*=\"home\"]'))" class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all">
+          Ask the AI Now →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ABOUT SECTION ═══════════════ -->
+  <div class="mt-20 grid grid-cols-1 gap-12 sm:grid-cols-2">
+
+  <!-- ================= DEEP ================= -->
+
+  <div class="text-center bg-gray-50 p-6 rounded-xl shadow-md">
+
+```
+<!-- IMAGE -->
+<div class="flex justify-center">
+  <img 
+    src="/static/deep_photo.jpg"
+    class="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg"
+    alt="Deep Das"
+  >
+</div>
+
+<!-- TEXT -->
+<div class="mt-6">
+  <h3 class="text-lg font-medium text-gray-900">
+    Deep Das
+    <span class="ml-2 px-2.5 py-0.5 rounded-full text-xs bg-indigo-100 text-indigo-800">
+      AI ML Lead
+    </span>
+  </h3>
+
+  <p class="mt-2 text-sm text-gray-500">
+    Leading our AI initiatives and machine learning implementations to deliver cutting-edge financial solutions.
+  </p>
+
+  <!-- SOCIAL -->
+  <div class="mt-4 flex justify-center space-x-4">
+
+    <!-- LinkedIn -->
+    <a href="https://www.linkedin.com/in/deep-das-4b5aa527b/" target="_blank"
+       class="text-gray-400 hover:text-blue-600 transition">
+      <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+      </svg>
+    </a>
+
+    <!-- GitHub -->
+    <a href="https://github.com/THE-DEEPDAS" target="_blank"
+       class="text-gray-400 hover:text-black transition">
+      <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 
+    8.205 11.385.6.113.82-.258.82-.577 
+    0-.285-.01-1.04-.015-2.04-3.338.726-4.042-1.61-4.042-1.61
+    -.546-1.385-1.333-1.754-1.333-1.754-1.089-.744.083-.729.083-.729
+    1.205.084 1.84 1.236 1.84 1.236
+    1.07 1.835 2.809 1.305 3.495.998
+    .108-.776.418-1.305.76-1.605
+    -2.665-.3-5.467-1.335-5.467-5.93
+    0-1.31.465-2.38 1.235-3.22
+    -.135-.303-.54-1.523.105-3.176
+    0 0 1.005-.322 3.3 1.23
+    .96-.267 1.98-.399 3-.405
+    1.02.006 2.04.138 3 .405
+    2.28-1.552 3.285-1.23 3.285-1.23
+    .645 1.653.24 2.873.12 3.176
+    .765.84 1.23 1.91 1.23 3.22
+    0 4.61-2.805 5.625-5.475 5.92
+    .435.375.81 1.096.81 2.215
+    0 1.6-.015 2.89-.015 3.285
+    0 .315.21.69.825.57
+    C20.565 21.795 24 17.295 24 12
+    c0-6.63-5.37-12-12-12z"/>
+      </svg>
+    </a>
+
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- ================= SWAPNA ================= -->
+
+  <div class="text-center bg-gray-50 p-6 rounded-xl shadow-md">
+
+```
+<!-- IMAGE -->
+<div class="flex justify-center">
+  <img 
+    src="/static/swapna.jpg"
+    class="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg"
+    alt="Swapna"
+  >
+</div>
+
+<!-- TEXT -->
+<div class="mt-6">
+  <h3 class="text-lg font-medium text-gray-900">
+    Swapna K
+    <span class="ml-2 px-2.5 py-0.5 rounded-full text-xs bg-purple-100 text-purple-800">
+      AIML Lead
+    </span>
+  </h3>
+
+  <p class="mt-2 text-sm text-gray-500">
+    Crafting beautiful and intuitive user interfaces to enhance the financial query experience.
+  </p>
+
+  <!-- SOCIAL -->
+  <div class="mt-4 flex justify-center space-x-4">
+
+    <!-- LinkedIn -->
+    <a href="https://www.linkedin.com/in/swapna-kondapuram-630626292/" target="_blank"
+       class="text-gray-400 hover:text-blue-600 transition">
+      <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+      </svg>
+    </a>
+
+    <!-- GitHub -->
+    <a href="https://github.com/swap0506" target="_blank"
+       class="text-gray-400 hover:text-black transition">
+      <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 
+    8.205 11.385.6.113.82-.258.82-.577 
+    0-.285-.01-1.04-.015-2.04-3.338.726-4.042-1.61-4.042-1.61
+    -.546-1.385-1.333-1.754-1.333-1.754-1.089-.744.083-.729.083-.729
+    1.205.084 1.84 1.236 1.84 1.236
+    1.07 1.835 2.809 1.305 3.495.998
+    .108-.776.418-1.305.76-1.605
+    -2.665-.3-5.467-1.335-5.467-5.93
+    0-1.31.465-2.38 1.235-3.22
+    -.135-.303-.54-1.523.105-3.176
+    0 0 1.005-.322 3.3 1.23
+    .96-.267 1.98-.399 3-.405
+    1.02.006 2.04.138 3 .405
+    2.28-1.552 3.285-1.23 3.285-1.23
+    .645 1.653.24 2.873.12 3.176
+    .765.84 1.23 1.91 1.23 3.22
+    0 4.61-2.805 5.625-5.475 5.92
+    .435.375.81 1.096.81 2.215
+    0 1.6-.015 2.89-.015 3.285
+    0 .315.21.69.825.57
+    C20.565 21.795 24 17.295 24 12
+    c0-6.63-5.37-12-12-12z"/>
+      </svg>
+    </a>
+
+  </div>
+</div>
+```
+
+  </div>
+
+</div>
+
+
+  <script>
+    /* ── Navigation ── */
+    function showSection(name, el) {
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('section-' + name).classList.add('active');
+      document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+      if (el) el.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    }
+
+    /* ── Product filter ── */
+    function filterProducts(cat, btn) {
+      document.querySelectorAll('.prod-tab').forEach(b => {
+        b.className = 'prod-tab px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600 transition-all';
+      });
+      btn.className = 'prod-tab px-5 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-sm transition-all';
+      document.querySelectorAll('#productsGrid .product-card').forEach(card => {
+        card.style.display = (cat === 'all' || card.dataset.category === cat) ? 'block' : 'none';
+      });
+    }
+
+    /* ── Query product from Products page ── */
+    function queryProduct(queryText) {
+      showSection('home', document.querySelector('a[onclick*="home"]'));
+      setTimeout(() => {
+        document.getElementById('queryInput').value = queryText;
+        document.getElementById('queryForm').dispatchEvent(new Event('submit'));
+      }, 400);
+    }
+
+    /* ── Example query click ── */
+    document.querySelectorAll('.group').forEach(query => {
+      query.addEventListener('click', function () {
+        const p = this.querySelector('p');
+        if (p) document.getElementById('queryInput').value = p.textContent;
+      });
+    });
+
+    /* ── Slide-up animation ── */
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.animate-slide-up').forEach((el, i) => {
+        el.style.animationDelay = `${i * 0.1}s`;
+      });
+    });
+
+    /* ── AI query submit ── */
+    async function submitQuery() {
+      const query = document.getElementById('queryInput').value;
+      const model = document.getElementById('modelSelect').value;
+      const responseText = document.getElementById('responseText');
+      document.getElementById('responseContainer').classList.remove('hidden');
+      responseText.innerHTML = 'Processing query...';
+      try {
+        const response = await fetch('/query_new', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, language: 'English', model_name: model })
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        responseText.innerHTML = data?.response ?? "Sorry, I couldn't process that query. Please try again.";
+      } catch (error) {
+        console.error('Error:', error);
+        responseText.innerHTML = "Error processing query. Please try again.";
+      }
+    }
+
+    document.getElementById('queryForm').addEventListener('submit', function (e) {
+      e.preventDefault(); submitQuery();
+    });
+
+    /* ── Voice input ── */
+    let recognition = null, isRecording = false;
+    function startRecording() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) { alert("Speech recognition is not supported in your browser."); return; }
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US'; recognition.continuous = true; recognition.interimResults = true;
+      recognition.onstart = () => {
+        isRecording = true;
+        const btn = document.getElementById('voiceButton');
+        btn.classList.add('recording');
+        btn.querySelector('.button-text').textContent = 'Stop Voice Input';
+        document.getElementById('queryInput').placeholder = 'Listening...';
+      };
+      recognition.onresult = (e) => {
+        document.getElementById('queryInput').value = Array.from(e.results).map(r => r[0].transcript).join('');
+      };
+      recognition.onerror = (e) => { if (e.error === 'not-allowed') alert('Please allow microphone access.'); stopRecording(); };
+      recognition.onend = () => { if (isRecording) { try { recognition.start(); } catch { stopRecording(); } } };
+      try { recognition.start(); } catch { stopRecording(); }
+    }
+    function stopRecording() {
+      if (recognition) recognition.stop();
+      isRecording = false;
+      const btn = document.getElementById('voiceButton');
+      btn.classList.remove('recording');
+      btn.querySelector('.button-text').textContent = 'Start Voice Input';
+      document.getElementById('queryInput').placeholder = 'Enter your insurance or banking query here...';
+    }
+    function toggleRecording() { isRecording ? stopRecording() : startRecording(); }
+    document.getElementById('voiceButton').addEventListener('click', toggleRecording);
+    window.addEventListener('beforeunload', () => { if (recognition) recognition.stop(); });
+
+    /* ── Generate report ── */
+    async function generateReport() {
+      const model = document.getElementById('modelSelect').value;
+      try {
+        const response = await fetch('/generate_report', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model_name: model })
+        });
+        if (response.headers.get('Content-Type') === 'application/pdf') {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url; a.download = 'financial_report.pdf';
+          document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); a.remove();
+        } else { alert('Report generated successfully!'); }
+      } catch { alert('Error generating report. Please try again.'); }
+    }
+    document.getElementById('generateReport').addEventListener('click', generateReport);
+  </script>
+</body>
+</html>
