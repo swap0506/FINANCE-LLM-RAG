@@ -5,5 +5,6 @@ fastapi
 uvicorn
 qdrant-client
 python-dotenv
-requests
-jinja2
+groq
+sentence-transformers
+itsdangerous
