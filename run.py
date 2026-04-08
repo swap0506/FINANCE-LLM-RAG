@@ -48,7 +48,7 @@ def main():
     
     print("Document ingestion complete. Starting the application...")
     # Step 4: Start the FastAPI application
-    subprocess.run(["uvicorn", "rag:app", "--reload"])
+    subprocess.run(["uvicorn", "main:app", "--reload"])
 
 if __name__ == "__main__":
     main()
